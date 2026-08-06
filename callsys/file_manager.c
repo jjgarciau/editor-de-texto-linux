@@ -12,7 +12,8 @@ void print_usage(const char *prog_name) {
     printf("  %s create <archivo>\n", prog_name);
     printf("  %s write <archivo> <texto>\n", prog_name);
     printf("  %s read <archivo>\n", prog_name);
-    printf("  %s delete <archivo>\n", prog_name);
+    printf("  %s delete|rm <archivo>\n", prog_name);
+    printf("  %s update <archivo> <nuevo_texto>\n", prog_name);
     printf("  %s mkdir <directorio>\n", prog_name);
     printf("  %s rmdir <directorio>\n", prog_name);
     printf("  %s info <archivo/directorio>\n", prog_name);
@@ -106,7 +107,7 @@ int main(int argc, char *argv[]) {
     // ==========================================
     // 4. ELIMINAR UN ARCHIVO (System call: unlink)
     // ==========================================
-    else if (strcmp(command, "delete") == 0) {
+    else if (strcmp(command, "delete") == 0 || strcmp(command, "rm") == 0) {
         // unlink() remueve el nombre del sistema de archivos. Si es el último enlace (link duro)
         // y ningún proceso lo tiene abierto, los bloques de datos se liberan (se elimina físicamente).
         if (unlink(target) == -1) {
@@ -222,6 +223,32 @@ int main(int argc, char *argv[]) {
             return 1;
         }
         printf("Permisos de '%s' cambiados a %04o exitosamente.\n", target, mode);
+    }
+    // ==========================================
+    // 10. ACTUALIZAR CONTENIDO (System call: write con O_TRUNC)
+    // ==========================================
+    else if (strcmp(command, "update") == 0) {
+        if (argc < 4) {
+            printf("Error: Falta el texto para actualizar el archivo.\n");
+            return 1;
+        }
+        const char *text = argv[3];
+        
+        // O_TRUNC borra el contenido actual antes de escribir
+        int fd = open(target, O_WRONLY | O_TRUNC);
+        if (fd == -1) {
+            perror("Error al abrir el archivo para actualizar");
+            return 1;
+        }
+        
+        ssize_t bytes_written = write(fd, text, strlen(text));
+        if (bytes_written == -1) {
+            perror("Error al actualizar el archivo");
+            close(fd);
+            return 1;
+        }
+        printf("Se actualizó el archivo '%s' escribiendo %zd bytes.\n", target, bytes_written);
+        close(fd);
     }
     // Si el comando no coincide con nada de arriba
     else {

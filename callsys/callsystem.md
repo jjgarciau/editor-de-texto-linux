@@ -12,8 +12,9 @@ A continuación, una tabla que compara las llamadas al sistema (Syscalls) que he
 | **Abrir / Crear** | `open()` | `fopen()` | `touch`, `cat >` | `open` devuelve un entero (`fd`), `fopen` devuelve un puntero (`FILE *`) que incluye un buffer gestionado en memoria de usuario. |
 | **Cerrar** | `close()` | `fclose()` | *(Implicito al terminar comando)* | `fclose` limpia y vacía el buffer de usuario (flush) antes de invocar internamente a `close`. |
 | **Leer** | `read()` | `fread()`, `fgets()`, `fscanf()` | `cat`, `less`, `more` | `read` extrae bytes crudos directo del kernel; las de librería permiten parsear texto o tipos de datos. |
-| **Escribir** | `write()` | `fwrite()`, `fputs()`, `fprintf()` | `echo "..." >`, `tee` | `write` envía bloques de bytes crudos; `fprintf` permite formatear cadenas dinámicamente. |
-| **Borrar Archivo** | `unlink()` | `remove()` | `rm` | `remove()` es el estándar de C, el cual en sistemas POSIX hace una llamada directa a `unlink()`. |
+| **Escribir (Añadir)** | `write()` con `O_APPEND` | `fwrite()`, `fputs()`, `fprintf()` | `echo "..." >>`, `tee -a` | `write` envía bloques de bytes crudos; `fprintf` permite formatear cadenas dinámicamente. |
+| **Actualizar (Sobrescribir)** | `open()` con `O_TRUNC` y `write()` | `freopen()`, `fprintf()` | `echo "..." >` | Al usar `O_TRUNC` al abrir, se vacía el archivo antes de escribir. |
+| **Borrar Archivo** | `unlink()` | `remove()` | `rm` | `remove()` es el estándar de C, el cual en sistemas POSIX hace una llamada directa a `unlink()`. Comandos como `rm` utilizan esta syscall. |
 | **Metadatos / Info** | `stat()` | *No hay equivalente estándar* | `stat`, `ls -l` | El estándar de C básico no lee inodos; se requiere usar la API POSIX. |
 | **Directorios** | `mkdir()`, `rmdir()` | *No hay equivalente estándar* | `mkdir`, `rmdir` | La librería estándar de C pura no gestiona carpetas, se delega al estándar POSIX del OS. |
 
@@ -128,7 +129,7 @@ Estas llamadas al sistema interactúan con la jerarquía de carpetas y enlaces s
   rmdir("mi_carpeta");
   ```
 
-* **Eliminar un archivo**: En UNIX, eliminar un archivo es realmente "desenlazarlo" (quitarle su nombre). Si ningún proceso lo está usando, el Kernel borra los datos.
+* **Eliminar un archivo (`rm`)**: En UNIX, eliminar un archivo es realmente "desenlazarlo" (quitarle su nombre). Si ningún proceso lo está usando, el Kernel borra los datos. Es la system call utilizada por el comando `rm`.
   ```c
   unlink("archivo.txt");
   ```
