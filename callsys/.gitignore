@@ -1,1 +1,4 @@
 file_manager
+cloner
+*.txt*
+*.clone
