@@ -1,3 +1,33 @@
+/*
+ * =====================================================================================
+ * Comparación entre Comandos de Terminal (CLI), System Calls (POSIX) y Librerías de C
+ * =====================================================================================
+ * 
+ * Este código interactúa con el sistema de archivos utilizando Llamadas al Sistema
+ * (System Calls). Estas llamadas se comunican directamente con el Kernel del Sistema Operativo.
+ * 
+ * A continuación, se muestra la relación y comparación con las funciones de la librería
+ * estándar de C y los comandos equivalentes de la terminal:
+ * 
+ * | Operación             | System Call (Kernel)      | Función Librería C    | Comando CLI        | Diferencia / Explicación |
+ * |-----------------------|---------------------------|-----------------------|--------------------|--------------------------|
+ * | Crear/Abrir Archivo   | open()                    | fopen()               | touch, cat >       | open() devuelve un file descriptor (int) directo del OS. fopen() maneja buffers en memoria de usuario y devuelve un FILE*. |
+ * | Leer Archivo          | read()                    | fread(), fgets()      | cat, less          | read() lee bytes crudos sin formato. fread() permite lectura tipada y con buffering. |
+ * | Escribir (Añadir)     | write() (con O_APPEND)    | fwrite(), fprintf()   | echo ".." >>, tee  | write() envía bytes directo al SO. fprintf() permite dar formato a la cadena antes de enviarla. |
+ * | Actualizar (Vaciar)   | open() (con O_TRUNC)      | freopen()             | echo ".." >        | O_TRUNC le indica al SO que borre el contenido del archivo antes de escribir. |
+ * | Eliminar Archivo      | unlink()                  | remove()              | rm                 | unlink() elimina la referencia del archivo (inodo). remove() de C simplemente invoca a unlink() internamente en sistemas UNIX. |
+ * | Metadatos / Info      | stat()                    | N/A                   | stat, ls -l        | Permite consultar el inodo directamente para obtener tamaño, permisos, etc. |
+ * | Crear Directorio      | mkdir()                   | N/A                   | mkdir              | Delega al SO la creación de la estructura del directorio. |
+ * | Eliminar Directorio   | rmdir()                   | N/A                   | rmdir              | Elimina un directorio (el cual debe estar vacío). |
+ * | Cambiar Permisos      | chmod()                   | N/A                   | chmod              | Modifica directamente los permisos octales de un inodo. |
+ * 
+ * NOTA: La librería estándar de C (stdio.h) está construida "por encima" de las System Calls.
+ * Usar System Calls da más control (obligatorio para consultar inodos o cambiar permisos), 
+ * pero usar la librería de C suele ser más amigable y eficiente para procesar datos (debido a 
+ * sus buffers automáticos en memoria de usuario).
+ * =====================================================================================
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>      // Para constantes como O_CREAT, O_RDONLY, O_WRONLY
