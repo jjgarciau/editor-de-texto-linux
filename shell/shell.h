@@ -93,4 +93,7 @@ int cmd_despedir(int argc, char **argv);  /* Syscalls: getuid */
 int cmd_hora(int argc, char **argv);      /* Syscalls: time */
 int cmd_fecha(int argc, char **argv);     /* Syscalls: time */
 
+/* --- Categoría: Novatos (cat_novatos.c) --- */
+int cmd_eco(int argc, char **argv);       /* Syscalls: open, read, close */
+
 #endif /* SHELL_H */

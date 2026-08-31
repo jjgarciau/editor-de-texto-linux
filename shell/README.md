@@ -56,6 +56,13 @@ Comandos útiles para ver la hora, la fecha y saludar al usuario actual.
 * `fecha`: Muestra la fecha del sistema en formato YYYY-MM-DD.
   * *Syscalls*: `time(2)`
 
+### 5. Categoría: Novatos (`novatos`)
+
+Comandos sencillos pensados para usuarios principiantes que se inician en el uso del shell.
+
+* `eco <archivo.txt>`: Abre un archivo de texto, lee su contenido y lo imprime en pantalla.
+  * *Syscalls*: `open(2)`, `read(2)`, `close(2)`
+
 ---
 
 ## Compilación y Ejecución
@@ -110,5 +117,5 @@ sys-shell> d_info mi_archivo.txt
 El shell cuenta con una sección de ayuda dinámica muy completa. Puedes escribir:
 
 * `help`: Muestra la bienvenida y el listado de categorías.
-* `help <categoria>`: Muestra todos los comandos pertenecientes a `datos`, `memoria`, `monitoreo` o `utilidades`.
+* `help <categoria>`: Muestra todos los comandos pertenecientes a `datos`, `memoria`, `monitoreo`, `utilidades` o `novatos`.
 * `help <comando>`: Explica individualmente qué hace un comando, cómo se usa y qué llamadas al sistema específicas invoca.

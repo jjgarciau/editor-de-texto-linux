@@ -125,6 +125,15 @@ Command commands[] = {
         "Muestra la fecha actual del sistema.",
         "time(2)",
         cmd_fecha
+    },
+
+    /* --- Categoría: Novatos --- */
+    {
+        "eco", "novatos",
+        "eco <archivo.txt>",
+        "Lee un archivo de texto y muestra su contenido completo en consola.",
+        "open(2), read(2), close(2)",
+        cmd_eco
     }
 };
 
@@ -205,7 +214,8 @@ void print_help(const char *arg) {
         printf("  " COLOR_CATEGORY "datos" COLOR_RESET "      - Comandos de archivos y datos (open, read, write, stat, ...)\n");
         printf("  " COLOR_CATEGORY "memoria" COLOR_RESET "    - Comandos de control de heap y memoria (sbrk, mmap, ...)\n");
         printf("  " COLOR_CATEGORY "monitoreo" COLOR_RESET "  - Comandos de procesos, señales y recursos (fork, exec, kill, getrusage)\n");
-        printf("  " COLOR_CATEGORY "utilidades" COLOR_RESET " - Comandos útiles del sistema (saludar, hora, fecha, despedir)\n\n");
+        printf("  " COLOR_CATEGORY "utilidades" COLOR_RESET " - Comandos útiles del sistema (saludar, hora, fecha, despedir)\n");
+        printf("  " COLOR_CATEGORY "novatos" COLOR_RESET "    - Comandos sencillos para usuarios principiantes (eco)\n\n");
         printf("Uso general:\n");
         printf("  " COLOR_PROMPT "help <categoria>" COLOR_RESET "  - Muestra comandos específicos de una categoría.\n");
         printf("  " COLOR_PROMPT "help <comando>" COLOR_RESET "    - Explica el uso y las syscalls de un comando específico.\n");
@@ -215,8 +225,9 @@ void print_help(const char *arg) {
     }
 
     /* Caso 2: El usuario escribió 'help <categoria>': Mostrar comandos del grupo */
-    if (strcmp(arg, "datos") == 0 || strcmp(arg, "memoria") == 0 || 
-        strcmp(arg, "monitoreo") == 0 || strcmp(arg, "utilidades") == 0) {
+    if (strcmp(arg, "datos") == 0 || strcmp(arg, "memoria") == 0 ||
+        strcmp(arg, "monitoreo") == 0 || strcmp(arg, "utilidades") == 0 ||
+        strcmp(arg, "novatos") == 0) {
         printf(COLOR_TITLE "\n--- Categoría: %s ---\n" COLOR_RESET, arg);
         for (int i = 0; i < num_commands; i++) {
             if (strcmp(commands[i].category, arg) == 0) {
