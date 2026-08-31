@@ -1,4 +1,9 @@
 shell/*.o
 shell/sys_shell
+shell/eafitOS
+shell/edi
 Banderas_CLI/*.o
 Banderas_CLI/cli_parser
+
+# Archivos temporales de Microsoft Word
+~$*
