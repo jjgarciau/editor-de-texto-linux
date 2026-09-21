@@ -63,6 +63,33 @@ Comandos sencillos pensados para usuarios principiantes que se inician en el uso
 * `eco <archivo.txt>`: Abre un archivo de texto, lee su contenido y lo imprime en pantalla.
   * *Syscalls*: `open(2)`, `read(2)`, `close(2)`
 
+### 6. Categoría: Edición (`edicion`)
+
+Herramientas **interactivas y con estado** que mantienen un descriptor de archivo abierto entre comandos. Se separó de `datos` porque los comandos de esa categoría son atómicos (abren, operan y cierran en una sola invocación), mientras que el editor abre un REPL anidado con estado persistente.
+
+* `edi [archivo]`: Lanza el editor de texto CLI construido íntegramente sobre llamadas al sistema POSIX.
+  * *Syscalls*: `open(2)`, `read(2)`, `write(2)`, `lseek(2)`, `ftruncate(2)`, `fstat(2)`, `close(2)`
+
+Comandos internos del editor:
+
+| Comando | Descripción | Syscalls |
+|---|---|---|
+| `o <archivo>` | Abre o crea el archivo (`O_RDWR\|O_CREAT`, 0644). | `open(2)` |
+| `p [n]` | Imprime todo el archivo o la línea `n`. | `lseek(2)`, `read(2)` |
+| `a <texto>` | Anexa una línea al final. | `lseek(2)` SEEK_END, `write(2)` |
+| `i <n> <texto>` | Inserta texto como línea `n` desplazando el resto. | `lseek(2)`, `read(2)`, `write(2)` |
+| `d <n>` | Borra la línea `n` y compacta el archivo. | `read(2)`, `write(2)`, `ftruncate(2)` |
+| `s <palabra>` | Busca una palabra e informa línea y columna. | `lseek(2)`, `read(2)` |
+| `m` | Metadatos del inodo: tamaño, permisos, inodo, fechas. | `fstat(2)` |
+| `y <n>` | Copia la línea `n` al portapapeles secuencial. | `lseek(2)`, `read(2)`, `malloc(3)` |
+| `x [n]` | Pega el elemento más antiguo del portapapeles en la línea `n`. | `lseek(2)`, `write(2)` |
+| `c` | Muestra el contenido pendiente del portapapeles. | — |
+| `t` | Conmuta el trazado de syscalls estilo `strace`. | — |
+| `h` | Ayuda del editor. | — |
+| `q` | Cierra el descriptor, libera memoria y vuelve al shell. | `close(2)` |
+
+> No existe comando "guardar": toda edición se persiste de inmediato con `write(2)`/`ftruncate(2)` sobre el mismo inodo.
+
 ---
 
 ## Compilación y Ejecución
@@ -75,13 +102,25 @@ Para compilar el proyecto es necesario estar en un entorno Linux con GCC y Make 
    make
    ```
 
-   Esto producirá el binario ejecutable `sys_shell`.
+   Esto producirá dos binarios: `eafitOS` (el shell con el editor integrado) y `edi`
+   (el editor en modo autónomo, usado por el script de pruebas).
 2. **Iniciar el shell interactivo:**
 
    ```bash
-   ./sys_shell
+   ./eafitOS          # o bien: make run
    ```
-3. **Limpiar archivos objeto y binarios:**
+3. **Usar el editor:**
+
+   ```bash
+   eafitOS> edi notas.txt     # desde el shell
+   ./edi notas.txt            # de forma autónoma
+   ```
+4. **Ejecutar la batería de pruebas automatizadas:**
+
+   ```bash
+   make pruebas       # o bien: bash pruebas_editor.sh
+   ```
+5. **Limpiar archivos objeto y binarios:**
 
    ```bash
    make clean
@@ -117,5 +156,5 @@ sys-shell> d_info mi_archivo.txt
 El shell cuenta con una sección de ayuda dinámica muy completa. Puedes escribir:
 
 * `help`: Muestra la bienvenida y el listado de categorías.
-* `help <categoria>`: Muestra todos los comandos pertenecientes a `datos`, `memoria`, `monitoreo`, `utilidades` o `novatos`.
+* `help <categoria>`: Muestra todos los comandos pertenecientes a `datos`, `memoria`, `monitoreo`, `utilidades`, `novatos` o `edicion`.
 * `help <comando>`: Explica individualmente qué hace un comando, cómo se usa y qué llamadas al sistema específicas invoca.

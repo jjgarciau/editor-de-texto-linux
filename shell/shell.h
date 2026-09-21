@@ -96,4 +96,9 @@ int cmd_fecha(int argc, char **argv);     /* Syscalls: time */
 /* --- Categoría: Novatos (cat_novatos.c) --- */
 int cmd_eco(int argc, char **argv);       /* Syscalls: open, read, close */
 
+/* --- Categoría: Edición (cat_edicion.c) --- */
+/* Lanza el editor de texto CLI (REPL anidado) construido sobre llamadas POSIX.
+   Implementación repartida en editor_core.c, editor_edit.c y editor_meta.c. */
+int cmd_edi(int argc, char **argv);       /* Syscalls: open, read, write, lseek, ftruncate, fstat, close */
+
 #endif /* SHELL_H */
