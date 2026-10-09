@@ -1,0 +1,7 @@
+# Objetos y binarios compilados del modulo Huffman
+*.o
+huffman
+huffman_asan
+# Artefactos de prueba
+*.huf
+*.out
