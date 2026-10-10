@@ -568,6 +568,11 @@ static void ed_ayuda(void)
     printf("  " COLOR_PROMPT "y <n>" COLOR_RESET "              Copia la linea n al portapapeles.  " COLOR_INFO "lseek(2), read(2), malloc(3)" COLOR_RESET "\n");
     printf("  " COLOR_PROMPT "x [n]" COLOR_RESET "              Pega el portapapeles en la linea n. " COLOR_INFO "lseek(2), write(2)" COLOR_RESET "\n");
     printf("  " COLOR_PROMPT "c" COLOR_RESET "                  Muestra el estado del portapapeles.\n");
+    printf("  " COLOR_PROMPT "z [sal] [hilos]" COLOR_RESET "    Comprime en 2do plano (Huffman).   " COLOR_INFO "pthread, mutex, cond" COLOR_RESET "\n");
+    printf("  " COLOR_PROMPT "u <ent> <sal> [h]" COLOR_RESET "  Descomprime en 2do plano.          " COLOR_INFO "pthread, mutex, cond" COLOR_RESET "\n");
+    printf("  " COLOR_PROMPT "j" COLOR_RESET "                  Estado/progreso de la tarea.\n");
+    printf("  " COLOR_PROMPT "w" COLOR_RESET "                  Muestra la barra en vivo hasta terminar.\n");
+    printf("  " COLOR_PROMPT "k" COLOR_RESET "                  Cancela la tarea en segundo plano.\n");
     printf("  " COLOR_PROMPT "t" COLOR_RESET "                  Conmuta el trazado de syscalls.\n");
     printf("  " COLOR_PROMPT "h" COLOR_RESET "                  Muestra esta ayuda.\n");
     printf("  " COLOR_PROMPT "q" COLOR_RESET "                  Cierra el descriptor y sale.       " COLOR_INFO "close(2)" COLOR_RESET "\n\n");
@@ -602,10 +607,13 @@ int ed_repl(const char *archivo_inicial)
     }
 
     while (!salir) {
+        char etiqueta[32];
+        ed_huf_revisar(&ed);                 /* join + aviso si la tarea termino */
+        ed_huf_etiqueta(etiqueta, sizeof(etiqueta));
         if (ed.abierto)
-            printf(COLOR_PROMPT "edi:%s> " COLOR_RESET, ed.ruta);
+            printf(COLOR_PROMPT "edi:%s%s> " COLOR_RESET, ed.ruta, etiqueta);
         else
-            printf(COLOR_PROMPT "edi> " COLOR_RESET);
+            printf(COLOR_PROMPT "edi%s> " COLOR_RESET, etiqueta);
         fflush(stdout);
 
         if (fgets(linea, sizeof(linea), stdin) == NULL) {
@@ -628,6 +636,11 @@ int ed_repl(const char *archivo_inicial)
         /* Comandos que no requieren archivo abierto */
         if (cmd == 'q') { salir = 1; continue; }
         if (cmd == 'h') { ed_ayuda(); continue; }
+        /* Tareas Huffman en segundo plano (no exigen archivo abierto) */
+        if (cmd == 'u') { ed_huf_descomprimir(&ed, resto); continue; }
+        if (cmd == 'j') { ed_huf_estado(); continue; }
+        if (cmd == 'w') { ed_huf_monitor(); continue; }
+        if (cmd == 'k') { ed_huf_cancelar(); continue; }
         if (cmd == 't') {
             ed_traza = !ed_traza;
             printf(COLOR_INFO "Trazado de syscalls %s.\n" COLOR_RESET, ed_traza ? "ACTIVADO" : "DESACTIVADO");
@@ -659,7 +672,9 @@ int ed_repl(const char *archivo_inicial)
                 fprintf(stderr, COLOR_ERROR "Uso: a <texto>\n" COLOR_RESET);
                 break;
             }
+            if (!ed_huf_permitir_escritura(&ed)) break;
             ed_anexar(&ed, resto);
+            ed_huf_fin_escritura();
             break;
         case 'i': {
             char *fin = NULL;
@@ -669,7 +684,9 @@ int ed_repl(const char *archivo_inicial)
                 break;
             }
             char *texto = ed_saltar_espacios(fin);
+            if (!ed_huf_permitir_escritura(&ed)) break;
             ed_insertar_linea(&ed, n, texto);
+            ed_huf_fin_escritura();
             break;
         }
         case 'd': {
@@ -677,7 +694,9 @@ int ed_repl(const char *archivo_inicial)
                 fprintf(stderr, COLOR_ERROR "Uso: d <n>\n" COLOR_RESET);
                 break;
             }
+            if (!ed_huf_permitir_escritura(&ed)) break;
             ed_borrar_linea(&ed, strtol(resto, NULL, 10));
+            ed_huf_fin_escritura();
             break;
         }
         case 's':
@@ -699,11 +718,16 @@ int ed_repl(const char *archivo_inicial)
             break;
         case 'x': {
             long n = (*resto == '\0') ? -1 : strtol(resto, NULL, 10);
+            if (!ed_huf_permitir_escritura(&ed)) break;
             ed_pegar(&ed, n);
+            ed_huf_fin_escritura();
             break;
         }
         case 'c':
             ed_clip_estado(&ed);
+            break;
+        case 'z':
+            ed_huf_comprimir(&ed, resto);
             break;
         default:
             fprintf(stderr, COLOR_ERROR "Comando '%c' no reconocido. Escribe 'h' para la ayuda.\n" COLOR_RESET, cmd);
@@ -711,6 +735,7 @@ int ed_repl(const char *archivo_inicial)
         }
     }
 
+    ed_huf_apagar(&ed);                      /* espera + join de la tarea de fondo */
     ed_cerrar(&ed);
     printf(COLOR_INFO "Editor cerrado. Regresando al shell.\n" COLOR_RESET);
     return 0;
