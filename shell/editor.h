@@ -134,4 +134,18 @@ int    ed_pegar(Editor *ed, long n);                             /* Comando x [n
 void   ed_clip_liberar(Editor *ed);                              /* free() del portapapeles */
 void   ed_clip_estado(Editor *ed);                               /* Muestra la cola         */
 
+/* ====================================================================================
+ * MODULO 4 - editor_huf.c   (Parcial 2: compresor Huffman concurrente en 2do plano)
+ * ==================================================================================== */
+int    ed_huf_comprimir(Editor *ed, const char *args);    /* Comando z [salida] [hilos]   */
+int    ed_huf_descomprimir(Editor *ed, const char *args); /* Comando u <ent> <sal> [h]    */
+void   ed_huf_estado(void);                               /* Comando j (progreso)         */
+void   ed_huf_monitor(void);                              /* Comando w (barra en vivo)    */
+void   ed_huf_cancelar(void);                             /* Comando k                    */
+void   ed_huf_etiqueta(char *buf, size_t n);              /* " [z 45%]" para el prompt    */
+void   ed_huf_revisar(Editor *ed);                        /* join si la tarea termino     */
+void   ed_huf_apagar(Editor *ed);                         /* espera y join al salir       */
+int    ed_huf_permitir_escritura(Editor *ed);             /* trywrlock antes de a/i/d/x   */
+void   ed_huf_fin_escritura(void);                        /* unlock tras a/i/d/x          */
+
 #endif /* EDITOR_H */
