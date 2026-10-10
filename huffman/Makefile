@@ -16,7 +16,7 @@ LDFLAGS = -pthread
 
 BIN  = huffman
 SRCS = main.c huffman.c freq_parallel.c worker_pool.c progress.c \
-       compress.c decompress.c
+       compress.c decompress.c huf_io.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(BIN)
